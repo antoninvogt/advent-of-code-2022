@@ -1,20 +1,23 @@
 import {
-	HandsMatch,
-	parseMatches,
+	MatchInstruction,
+	ShapeMatch,
+	parseMatchInstructions,
+	pickOwnHandBasedOnPartOneMapping,
+	pickOwnHandBasedOnOutcomeInstruction,
 	calculateIndividualScore,
 	calculateTotalScore
 } from "./02-solution";
 
 describe("Day 02", () => {
-	describe("parseMatches", () => {
-		it("should parse the input into matches of rock, paper, scissor hands", () => {
+	describe("parseMatchInstructions", () => {
+		it("should parse the input into match instructions", () => {
 			const input = [
 				"A Y",
 				"B X",
 				"C Z"
 			];
 
-			const result = parseMatches(input);
+			const result = parseMatchInstructions(input);
 
 			expect(result).toEqual([
 				[ "A", "Y" ],
@@ -24,13 +27,49 @@ describe("Day 02", () => {
 		});
 	});
 
+	describe("pickOwnHandBasedOnPartOneMapping", () => {
+		it("should pick the own hand based on the assumption stated in part one", () => {
+			const input = [
+				[ "A", "Y" ],
+				[ "B", "X" ],
+				[ "C", "Z" ]
+			] as MatchInstruction[];
+
+			const result = input.map(pickOwnHandBasedOnPartOneMapping);
+
+			expect(result).toEqual([
+				[ "A", "B" ],
+				[ "B", "A" ],
+				[ "C", "C" ]
+			]);
+		});
+	});
+
+	describe("pickOwnHandBasedOnOutcomeInstruction", () => {
+		it("should pick the own hand based on the assumption stated in part one", () => {
+			const input = [
+				[ "A", "Y" ],
+				[ "B", "X" ],
+				[ "C", "Z" ]
+			] as MatchInstruction[];
+
+			const result = input.map(pickOwnHandBasedOnOutcomeInstruction);
+
+			expect(result).toEqual([
+				[ "A", "A" ],
+				[ "B", "A" ],
+				[ "C", "A" ]
+			]);
+		});
+	});
+
 	describe("calculateIndividualScore", () => {
 		it("should parse the input into matches of rock, paper, scissor hands", () => {
 			const input = [
-				[ "A", "Y" ] as HandsMatch,
-				[ "B", "X" ] as HandsMatch,
-				[ "C", "Z" ] as HandsMatch
-			] as HandsMatch[];
+				[ "A", "B" ],
+				[ "B", "A" ],
+				[ "C", "C" ]
+			] as ShapeMatch[];
 
 			const result = input.map(calculateIndividualScore);
 
@@ -45,10 +84,10 @@ describe("Day 02", () => {
 	describe("calculateTotalScore", () => {
 		it("should parse the input into matches of rock, paper, scissor hands", () => {
 			const input = [
-				[ "A", "Y" ],
-				[ "B", "X" ],
-				[ "C", "Z" ]
-			] as HandsMatch[];
+				[ "A", "B" ],
+				[ "B", "A" ],
+				[ "C", "C" ]
+			] as ShapeMatch[];
 
 			const result = calculateTotalScore(input);
 
