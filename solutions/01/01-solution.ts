@@ -1,16 +1,36 @@
 import * as inputHelper from "../../helpers/input";
 
-async function solve(): Promise<string[]> {
-	const puzzleInput = await inputHelper.readPuzzleInput(__dirname, "./01-input.txt");
+function determineMergedCalories(allMealsForAllElves: string[]): number[] {
+	return allMealsForAllElves.reduce((mergedCalories: number[], line) => {
+		if (mergedCalories.length === 0 || line === "") {
+			mergedCalories.push(0);
+		}
 
-	// `puzzleInput` is a list of strings representing the individual lines of the input file
-	// empty lines are stripped by default; if you require the empty lines in the original document, use `inputHelper.readPuzzleInputPreservingWhiteLines` instead
+		if (line !== "") {
+			mergedCalories[mergedCalories.length - 1] += parseInt(line, 10);
+		}
+
+		return mergedCalories;
+	}, []);
+}
+
+function determineHighestCalories(caloriesPerElf: number[]): number {
+	return Math.max(...caloriesPerElf);
+}
+
+async function solve(): Promise<string[]> {
+	const puzzleInput = await inputHelper.readPuzzleInputPreservingWhiteLines(__dirname, "./01-input.txt");
+
+	const mergedCalories = determineMergedCalories(puzzleInput);
+	const highestCalories = determineHighestCalories(mergedCalories);
 
 	return [
-		// your solutions go here as a string
+		String(highestCalories)
 	];
 }
 
 export {
+	determineMergedCalories,
+	determineHighestCalories,
 	solve
 }
