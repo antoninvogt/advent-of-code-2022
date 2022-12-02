@@ -64,7 +64,7 @@ describe("Day 02", () => {
 	});
 
 	describe("calculateIndividualScore", () => {
-		it("should parse the input into matches of rock, paper, scissor hands", () => {
+		it("should determine the score for a single shape match", () => {
 			const input = [
 				[ "A", "B" ],
 				[ "B", "A" ],
@@ -82,7 +82,7 @@ describe("Day 02", () => {
 	});
 
 	describe("calculateTotalScore", () => {
-		it("should parse the input into matches of rock, paper, scissor hands", () => {
+		it("should determine the total score for all provided shape matches", () => {
 			const input = [
 				[ "A", "B" ],
 				[ "B", "A" ],
