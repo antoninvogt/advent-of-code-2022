@@ -1,6 +1,8 @@
 import {
 	determineMergedCalories,
-	determineHighestCalories
+	sortCalories,
+	determineHighestCaloriesOnSingleElf,
+	determineHighestCaloriesOnMultipleElves
 } from "./01-solution";
 
 describe("Day 01", () => {
@@ -35,8 +37,8 @@ describe("Day 01", () => {
 		});
 	});
 
-	describe("determineHighestCalories", () => {
-		it("should pick the highest item from the list of calories", () => {
+	describe("sortCalories", () => {
+		it("should sort the calories in descending order", () => {
 			const input = [
 				6000,
 				4000,
@@ -45,9 +47,47 @@ describe("Day 01", () => {
 				10000
 			];
 
-			const result = determineHighestCalories(input);
+			const result = sortCalories(input);
+
+			expect(result).toEqual([
+				24000,
+				11000,
+				10000,
+				6000,
+				4000
+			]);
+		});
+	});
+
+	describe("determineHighestCaloriesOnSingleElf", () => {
+		it("should pick should pick the highest item from the list of calories", () => {
+			const input = [
+				24000,
+				11000,
+				10000,
+				6000,
+				4000
+			];
+
+			const result = determineHighestCaloriesOnSingleElf(input);
 
 			expect(result).toEqual(24000);
+		});
+	});
+
+	describe("determineHighestCaloriesOnMultipleElves", () => {
+		it("should sum up the calories of the most loaded three elves", () => {
+			const input = [
+				24000,
+				11000,
+				10000,
+				6000,
+				4000
+			];
+
+			const result = determineHighestCaloriesOnMultipleElves(input);
+
+			expect(result).toEqual(45000);
 		});
 	});
 });

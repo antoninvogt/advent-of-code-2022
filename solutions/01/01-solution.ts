@@ -14,23 +14,36 @@ function determineMergedCalories(allMealsForAllElves: string[]): number[] {
 	}, []);
 }
 
-function determineHighestCalories(caloriesPerElf: number[]): number {
-	return Math.max(...caloriesPerElf);
+function sortCalories(caloriesPerElf: number[]) {
+	return caloriesPerElf.sort((a, b) => b - a);
+}
+
+function determineHighestCaloriesOnSingleElf(sortedCaloriesPerElf: number[]) {
+	return sortedCaloriesPerElf[0];
+}
+
+function determineHighestCaloriesOnMultipleElves(sortedCaloriesPerElf: number[]) {
+	return sortedCaloriesPerElf.slice(0, 3).reduce((totalCalories, nextCalories) => totalCalories + nextCalories, 0);
 }
 
 async function solve(): Promise<string[]> {
 	const puzzleInput = await inputHelper.readPuzzleInputPreservingWhiteLines(__dirname, "./01-input.txt");
 
 	const mergedCalories = determineMergedCalories(puzzleInput);
-	const highestCalories = determineHighestCalories(mergedCalories);
+	const sortedMergedCalories = sortCalories(mergedCalories);
+	const singleHighest = determineHighestCaloriesOnSingleElf(sortedMergedCalories);
+	const threeHighest = determineHighestCaloriesOnMultipleElves(sortedMergedCalories);
 
 	return [
-		String(highestCalories)
+		String(singleHighest),
+		String(threeHighest)
 	];
 }
 
 export {
 	determineMergedCalories,
-	determineHighestCalories,
+	sortCalories,
+	determineHighestCaloriesOnSingleElf,
+	determineHighestCaloriesOnMultipleElves,
 	solve
 }
