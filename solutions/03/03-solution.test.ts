@@ -1,6 +1,7 @@
 import {
 	splitInputLineIntoCompartments,
-	findFalselyDistributedItem,
+	splitIntoGroupsOfThree,
+	findSharedItem,
 	determinePriority,
 	sumUp
 } from "./03-solution";
@@ -19,18 +20,46 @@ describe("Day 03", () => {
 
 			const result = input.map(splitInputLineIntoCompartments);
 
-			expect(result).toEqual(expect.arrayContaining([
+			expect(result).toEqual([
 				[ "vJrwpWtwJgWr", "hcsFMMfFFhFp" ],
 				[ "jqHRNqRjqzjGDLGL", "rsFMfFZSrLrFZsSL" ],
 				[ "PmmdzqPrV", "vPwwTWBwg" ],
 				[ "wMqvLMZHhHMvwLH", "jbvcjnnSBnvTQFn" ],
 				[ "ttgJtRGJ", "QctTZtZT" ],
 				[ "CrZsJsPPZsGz", "wwsLwLmpwMDw" ]
-			]));
+			]);
 		});
 	});
 
-	describe("findFalselyDistributedItem", () => {
+	describe("splitIntoGroupsOfThree", () => {
+		it("should split the puzzle input into groups of three", () => {
+			const input = [
+				"vJrwpWtwJgWrhcsFMMfFFhFp",
+				"jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL",
+				"PmmdzqPrVvPwwTWBwg",
+				"wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn",
+				"ttgJtRGJQctTZtZT",
+				"CrZsJsPPZsGzwwsLwLmpwMDw"
+			];
+
+			const result = splitIntoGroupsOfThree(input);
+
+			expect(result).toEqual([
+				[
+					"vJrwpWtwJgWrhcsFMMfFFhFp",
+					"jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL",
+					"PmmdzqPrVvPwwTWBwg",
+				],
+				[
+					"wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn",
+					"ttgJtRGJQctTZtZT",
+					"CrZsJsPPZsGzwwsLwLmpwMDw"
+				]
+			]);
+		});
+	});
+
+	describe("findSharedItem", () => {
 		it("should find the item that is located in both the left and the right compartment", () => {
 			const input = [
 				[ "vJrwpWtwJgWr", "hcsFMMfFFhFp" ],
@@ -41,7 +70,7 @@ describe("Day 03", () => {
 				[ "CrZsJsPPZsGz", "wwsLwLmpwMDw" ]
 			];
 
-			const result = input.map(findFalselyDistributedItem);
+			const result = input.map(findSharedItem);
 
 			expect(result).toEqual([
 				"p",
@@ -50,6 +79,22 @@ describe("Day 03", () => {
 				"v",
 				"t",
 				"s"
+			]);
+		});
+
+		it("should find the item that is shared in three elves' backpacks", () => {
+			const input = [
+				[ "vJrwpWtwJgWrhcsFMMfFFhFp", "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL", "PmmdzqPrVvPwwTWBwg" ],
+				[ "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn", "ttgJtRGJQctTZtZT", "CrZsJsPPZsGzwwsLwLmpwMDw" ],
+				[ "abc", "dbc", "efc" ]
+			];
+
+			const result = input.map(findSharedItem);
+
+			expect(result).toEqual([
+				"r",
+				"Z",
+				"c"
 			]);
 		});
 	});
