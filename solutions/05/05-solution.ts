@@ -41,21 +41,33 @@ function parseInitialShipStacks(puzzleInputStartBlock: string[]): ShipStacks {
 	return shipsStacks;
 }
 
-function parseInstruction(puzzleInputLine: string): MoveInstruction {
-	const [ move, numberOfMovedItems, from, fromStackLabel, to, toStackLabel ] = puzzleInputLine.split(" ");
+function parseInstructions(puzzleInputLines: string[]): MoveInstruction[] {
+	return puzzleInputLines
+		.filter((line) => !!line)
+		.reduce((moveInstructions, nextInputLine) => {
+			const [ move, numberOfMovedItems, from, fromStackLabel, to, toStackLabel ] = nextInputLine.split(" ");
 
-	return {
-		fromStackIndex: parseInt(fromStackLabel, 10) - 1,
-		toStackIndex: parseInt(toStackLabel, 10) - 1,
-		numberOfMovedItems: parseInt(numberOfMovedItems, 10)
-	};
+			moveInstructions.push({
+				fromStackIndex: parseInt(fromStackLabel, 10) - 1,
+				toStackIndex: parseInt(toStackLabel, 10) - 1,
+				numberOfMovedItems: parseInt(numberOfMovedItems, 10)
+			});
+
+			return moveInstructions;
+		}, [] as MoveInstruction[]);
 }
 
-function applyMoveInstructionToStacks(shipStacks: ShipStacks, instruction: MoveInstruction): ShipStacks {
+function applyMoveInstructionToStacks(shipStacks: ShipStacks, instruction: MoveInstruction, canMoveMultipleContainersAtOnce = false): ShipStacks {
 	const { fromStackIndex, toStackIndex, numberOfMovedItems } = instruction;
 
-	for (let i = 0; i < numberOfMovedItems; i++) {
-		shipStacks[toStackIndex].push(shipStacks[fromStackIndex].pop() as string); // casting here as an easy way out of `undefined` checks, trusting that puzzle instructions will always be valid
+	if (!canMoveMultipleContainersAtOnce) {
+		for (let i = 0; i < numberOfMovedItems; i++) {
+			shipStacks[toStackIndex].push(shipStacks[fromStackIndex].pop() as string); // casting here as an easy way out of `undefined` checks, trusting that puzzle instructions will always be valid
+		}
+	} else {
+		const intactPartialStack = shipStacks[fromStackIndex].splice(-numberOfMovedItems);
+
+		shipStacks[toStackIndex] = shipStacks[toStackIndex].concat(intactPartialStack);
 	}
 
 	return shipStacks;
@@ -77,22 +89,27 @@ async function solve(): Promise<string[]> {
 	const puzzleInput = await inputHelper.readPuzzleInputPreservingWhiteLines(__dirname, "./05-input.txt");
 
 	const puzzleInputParts = splitPuzzleInput(puzzleInput);
-	const shipStacks = parseInitialShipStacks(puzzleInputParts[0]);
-	const moveInstructions = puzzleInputParts[1].map(parseInstruction);
+	const moveInstructions = parseInstructions(puzzleInputParts[1]);
 
-	moveInstructions.map(applyMoveInstructionToStacks.bind(null, shipStacks));
+	const shipStacksSingleMove = parseInitialShipStacks(puzzleInputParts[0]);
+	const shipStacksMultipleMove = parseInitialShipStacks(puzzleInputParts[0]);
 
-	const topContainerLabels = readTopContainersLabels(shipStacks);
+	moveInstructions.map((instruction) => applyMoveInstructionToStacks(shipStacksSingleMove, instruction, false));
+	moveInstructions.map((instruction) => applyMoveInstructionToStacks(shipStacksMultipleMove, instruction, true));
+
+	const topContainerLabelsSingleMove = readTopContainersLabels(shipStacksSingleMove);
+	const topContainerLabelsMultipleMove = readTopContainersLabels(shipStacksMultipleMove);
 
 	return [
-		topContainerLabels
+		topContainerLabelsSingleMove,
+		topContainerLabelsMultipleMove
 	];
 }
 
 export {
 	splitPuzzleInput,
 	parseInitialShipStacks,
-	parseInstruction,
+	parseInstructions,
 	applyMoveInstructionToStacks,
 	readTopContainersLabels,
 	solve

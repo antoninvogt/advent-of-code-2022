@@ -1,7 +1,7 @@
 import {
 	splitPuzzleInput,
 	parseInitialShipStacks,
-	parseInstruction,
+	parseInstructions,
 	applyMoveInstructionToStacks,
 	readTopContainersLabels
 } from "./05-solution";
@@ -59,8 +59,8 @@ describe("Day 05", () => {
 		});
 	});
 
-	describe("parseInstruction", () => {
-		it("should parse a puzzle input line into a movement instruction", () => {
+	describe("parseInstructions", () => {
+		it("should parse all puzzle input lines into a list of movement instruction", () => {
 			const input = [
 				"move 1 from 2 to 1",
 				"move 3 from 1 to 3",
@@ -68,7 +68,26 @@ describe("Day 05", () => {
 				"move 1 from 1 to 2"
 			];
 
-			const result = input.map(parseInstruction);
+			const result = parseInstructions(input);
+
+			expect(result).toEqual([
+				{ fromStackIndex: 1, toStackIndex: 0, numberOfMovedItems: 1 },
+				{ fromStackIndex: 0, toStackIndex: 2, numberOfMovedItems: 3 },
+				{ fromStackIndex: 1, toStackIndex: 0, numberOfMovedItems: 2 },
+				{ fromStackIndex: 0, toStackIndex: 1, numberOfMovedItems: 1 }
+			]);
+		});
+
+		it("should disregard trailing newlines", () => {
+			const input = [
+				"move 1 from 2 to 1",
+				"move 3 from 1 to 3",
+				"move 2 from 2 to 1",
+				"move 1 from 1 to 2",
+				""
+			];
+
+			const result = parseInstructions(input);
 
 			expect(result).toEqual([
 				{ fromStackIndex: 1, toStackIndex: 0, numberOfMovedItems: 1 },
@@ -99,72 +118,148 @@ describe("Day 05", () => {
 			expect(result).not.toEqual(initialStackConfigurationReference);
 		});
 
-		it("should apply the first move as described in the puzzle description", () => {
-			const shipStacks = [
-				[ "Z", "N" ],
-				[ "M", "C", "D" ],
-				[ "P" ]
-			]
-			const instruction = { fromStackIndex: 1, toStackIndex: 0, numberOfMovedItems: 1 };
+		describe("single container move mode",() => {
+			const canMoveMultipleContainersAtOnce = false;
 
-			const result = applyMoveInstructionToStacks(shipStacks, instruction);
+			it("should apply the first move as described in the puzzle description", () => {
+				const shipStacks = [
+					[ "Z", "N" ],
+					[ "M", "C", "D" ],
+					[ "P" ]
+				]
+				const instruction = { fromStackIndex: 1, toStackIndex: 0, numberOfMovedItems: 1 };
 
-			expect(result).toEqual([
-				[ "Z", "N", "D" ],
-				[ "M", "C" ],
-				[ "P" ]
-			]);
+				const result = applyMoveInstructionToStacks(shipStacks, instruction, canMoveMultipleContainersAtOnce);
+
+				expect(result).toEqual([
+					[ "Z", "N", "D" ],
+					[ "M", "C" ],
+					[ "P" ]
+				]);
+			});
+
+			it("should apply the second move as described in the puzzle description", () => {
+				const shipStacks = [
+					[ "Z", "N", "D" ],
+					[ "M", "C" ],
+					[ "P" ]
+				]
+				const instruction = { fromStackIndex: 0, toStackIndex: 2, numberOfMovedItems: 3 };
+
+				const result = applyMoveInstructionToStacks(shipStacks, instruction, canMoveMultipleContainersAtOnce);
+
+				expect(result).toEqual([
+					[],
+					[ "M", "C" ],
+					[ "P", "D", "N", "Z" ]
+				]);
+			});
+
+			it("should apply the third move as described in the puzzle description", () => {
+				const shipStacks = [
+					[],
+					[ "M", "C" ],
+					[ "P", "D", "N", "Z" ]
+				]
+				const instruction = { fromStackIndex: 1, toStackIndex: 0, numberOfMovedItems: 2 };
+
+				const result = applyMoveInstructionToStacks(shipStacks, instruction, canMoveMultipleContainersAtOnce);
+
+				expect(result).toEqual([
+					[ "C", "M" ],
+					[],
+					[ "P", "D", "N", "Z" ]
+				]);
+			});
+
+			it("should apply the fourth move as described in the puzzle description", () => {
+				const shipStacks = [
+					[ "C", "M" ],
+					[],
+					[ "P", "D", "N", "Z" ]
+				]
+				const instruction = { fromStackIndex: 0, toStackIndex: 1, numberOfMovedItems: 1 };
+
+				const result = applyMoveInstructionToStacks(shipStacks, instruction, canMoveMultipleContainersAtOnce);
+
+				expect(result).toEqual([
+					[ "C" ],
+					[ "M" ],
+					[ "P", "D", "N", "Z" ]
+				]);
+			});
 		});
 
-		it("should apply the second move as described in the puzzle description", () => {
-			const shipStacks = [
-				[ "Z", "N", "D" ],
-				[ "M", "C" ],
-				[ "P" ]
-			]
-			const instruction = { fromStackIndex: 0, toStackIndex: 2, numberOfMovedItems: 3 };
+		describe("multiple container move mode",() => {
+			const canMoveMultipleContainersAtOnce = true;
 
-			const result = applyMoveInstructionToStacks(shipStacks, instruction);
+			it("should apply the first move as described in the puzzle description", () => {
+				const shipStacks = [
+					[ "Z", "N" ],
+					[ "M", "C", "D" ],
+					[ "P" ]
+				]
+				const instruction = { fromStackIndex: 1, toStackIndex: 0, numberOfMovedItems: 1 };
 
-			expect(result).toEqual([
-				[],
-				[ "M", "C" ],
-				[ "P", "D", "N", "Z" ]
-			]);
-		});
+				const result = applyMoveInstructionToStacks(shipStacks, instruction, canMoveMultipleContainersAtOnce);
 
-		it("should apply the third move as described in the puzzle description", () => {
-			const shipStacks = [
-				[],
-				[ "M", "C" ],
-				[ "P", "D", "N", "Z" ]
-			]
-			const instruction = { fromStackIndex: 1, toStackIndex: 0, numberOfMovedItems: 2 };
+				expect(result).toEqual([
+					[ "Z", "N", "D" ],
+					[ "M", "C" ],
+					[ "P" ]
+				]);
+			});
 
-			const result = applyMoveInstructionToStacks(shipStacks, instruction);
+			it("should apply the second move as described in the puzzle description", () => {
+				const shipStacks = [
+					[ "Z", "N", "D" ],
+					[ "M", "C" ],
+					[ "P" ]
+				]
+				const instruction = { fromStackIndex: 0, toStackIndex: 2, numberOfMovedItems: 3 };
 
-			expect(result).toEqual([
-				[ "C", "M" ],
-				[],
-				[ "P", "D", "N", "Z" ]
-			]);
-		});
+				const result = applyMoveInstructionToStacks(shipStacks, instruction, canMoveMultipleContainersAtOnce);
 
-		it("should apply the fourth move as described in the puzzle description", () => {
-			const shipStacks = [
-				[ "C", "M" ],
-				[],
-				[ "P", "D", "N", "Z" ]
-			]
-			const instruction = { fromStackIndex: 0, toStackIndex: 1, numberOfMovedItems: 1 };
+				expect(result).toEqual([
+					[],
+					[ "M", "C" ],
+					[ "P", "Z", "N", "D" ]
+				]);
+			});
 
-			const result = applyMoveInstructionToStacks(shipStacks, instruction);
+			it("should apply the third move as described in the puzzle description", () => {
+				const shipStacks = [
+					[],
+					[ "M", "C" ],
+					[ "P", "Z", "N", "D" ]
+				]
+				const instruction = { fromStackIndex: 1, toStackIndex: 0, numberOfMovedItems: 2 };
 
-			expect(result).toEqual([
-				[ "C" ],
-				[ "M" ],
-				[ "P", "D", "N", "Z" ]
-			]);
+				const result = applyMoveInstructionToStacks(shipStacks, instruction, canMoveMultipleContainersAtOnce);
+
+				expect(result).toEqual([
+					[ "M", "C" ],
+					[],
+					[ "P", "Z", "N", "D" ]
+				]);
+			});
+
+			it("should apply the fourth move as described in the puzzle description", () => {
+				const shipStacks = [
+					[ "M", "C" ],
+					[],
+					[ "P", "Z", "N", "D" ]
+				]
+				const instruction = { fromStackIndex: 0, toStackIndex: 1, numberOfMovedItems: 1 };
+
+				const result = applyMoveInstructionToStacks(shipStacks, instruction, canMoveMultipleContainersAtOnce);
+
+				expect(result).toEqual([
+					[ "M" ],
+					[ "C" ],
+					[ "P", "Z", "N", "D" ]
+				]);
+			});
 		});
 	});
 
