@@ -1,8 +1,9 @@
 import * as inputHelper from "../../helpers/input";
 
-const START_OF_PACKAGE_MARKER_LENGTH = 4;
+const START_OF_PACKET_MARKER_LENGTH = 4;
+const START_OF_MESSAGE_MARKER_LENGTH = 14;
 
-function determineStartOfPacketMarkerPosition(dataStreamBuffer: string): number {
+function determineMarkerPosition(markerLength: number, dataStreamBuffer: string): number {
 	let runningSubString: string[] = [];
 	let endOfMarkerPosition = -1;
 
@@ -17,7 +18,7 @@ function determineStartOfPacketMarkerPosition(dataStreamBuffer: string): number 
 
 		runningSubString.push(character);
 
-		if (runningSubString.length === START_OF_PACKAGE_MARKER_LENGTH) {
+		if (runningSubString.length === markerLength) {
 			endOfMarkerPosition = i + 1;
 
 			break;
@@ -30,14 +31,18 @@ function determineStartOfPacketMarkerPosition(dataStreamBuffer: string): number 
 async function solve(): Promise<string[]> {
 	const puzzleInput = await inputHelper.readPuzzleInput(__dirname, "./06-input.txt");
 
-	const firstStartOfPacketMarker = determineStartOfPacketMarkerPosition(puzzleInput[0]);
+	const firstStartOfPacketMarker = determineMarkerPosition(START_OF_PACKET_MARKER_LENGTH, puzzleInput[0]);
+	const firstStartOfMessageMarker = determineMarkerPosition(START_OF_MESSAGE_MARKER_LENGTH, puzzleInput[0]);
 
 	return [
-		String(firstStartOfPacketMarker)
+		String(firstStartOfPacketMarker),
+		String(firstStartOfMessageMarker)
 	];
 }
 
 export {
-	determineStartOfPacketMarkerPosition,
+	START_OF_PACKET_MARKER_LENGTH,
+	START_OF_MESSAGE_MARKER_LENGTH,
+	determineMarkerPosition,
 	solve
 }
