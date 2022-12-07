@@ -163,17 +163,38 @@ function addDirectorySizeOntoTotal(runningTotal: number, directory: IDirectory):
 	return runningTotal + directory.getSize();
 }
 
+function determineSpaceDeficit(rootDirectory: IDirectory): number {
+	const SPACE_ON_DEVICE = 70000000;
+	const SPACE_REQUIRED_FOR_UPDATE = 30000000;
+
+	const totalSpaceUsed = rootDirectory.getSize();
+
+	return SPACE_REQUIRED_FOR_UPDATE - (SPACE_ON_DEVICE - totalSpaceUsed);
+}
+
+function determineSizeOfSmallestApplicableDeletion(rootDirectory: IDirectory, spaceToFreeUp: number): number {
+	return findDirectories(rootDirectory)
+		.sort((a, b) => a.getSize() - b.getSize())
+		.find((directory) => directory?.getSize() >= spaceToFreeUp)
+		?.getSize() || -1;
+}
+
 async function solve(): Promise<string[]> {
 	const puzzleInput = await inputHelper.readPuzzleInput(__dirname, "./07-input.txt");
 
 	const consoleCommandsAndOutputs = parseOutputStatementChunksFromInput(puzzleInput);
 	const fileTree = buildFileTree(consoleCommandsAndOutputs);
+
 	const directoriesWithinSizeLimitTotalSize = findDirectories(fileTree)
 		.filter(isWithinSizeLimit)
 		.reduce(addDirectorySizeOntoTotal, 0);
 
+	const spaceToFreeUp = determineSpaceDeficit(fileTree);
+	const smallestApplicableDeletion = determineSizeOfSmallestApplicableDeletion(fileTree, spaceToFreeUp);
+
 	return [
-		String(directoriesWithinSizeLimitTotalSize)
+		String(directoriesWithinSizeLimitTotalSize),
+		String(smallestApplicableDeletion)
 	];
 }
 
@@ -185,5 +206,7 @@ export {
 	findDirectories,
 	isWithinSizeLimit,
 	addDirectorySizeOntoTotal,
+	determineSpaceDeficit,
+	determineSizeOfSmallestApplicableDeletion,
 	solve
 }

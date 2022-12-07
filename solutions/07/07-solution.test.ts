@@ -3,7 +3,9 @@ import {
 	buildFileTree,
 	findDirectories,
 	isWithinSizeLimit,
-	addDirectorySizeOntoTotal
+	addDirectorySizeOntoTotal,
+	determineSpaceDeficit,
+	determineSizeOfSmallestApplicableDeletion
 } from "./07-solution";
 
 describe("Day 07", () => {
@@ -162,6 +164,26 @@ describe("Day 07", () => {
 			const result = input.reduce(addDirectorySizeOntoTotal, 0);
 
 			expect(result).toEqual(95437);
+		});
+	});
+
+	describe("determineSpaceDeficit", () => {
+		it("should return the appropriate amount of space that must be freed up for the update", () => {
+			const input = buildFileTree(parseOutputStatementChunksFromInput(puzzleInput));
+
+			const result = determineSpaceDeficit(input);
+
+			expect(result).toEqual(8381165);
+		});
+	});
+
+	describe("determineSizeOfSmallestApplicableDeletion", () => {
+		it("should return the size of the appropriate directory to delete", () => {
+			const input = buildFileTree(parseOutputStatementChunksFromInput(puzzleInput));
+
+			const result = determineSizeOfSmallestApplicableDeletion(input, 8381165);
+
+			expect(result).toEqual(24933642);
 		});
 	});
 });
