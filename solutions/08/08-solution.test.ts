@@ -1,5 +1,6 @@
 import {
 	MapCoordinates,
+	createTreeMapFromInputStrings,
 	areCoordinatesInBounds,
 	getLinearMapTraversalCoordinates,
 	determineVisibilityByRow,
@@ -8,15 +9,38 @@ import {
 	determineScenicScores,
 	searchForHighestScenicScore
 } from "./08-solution";
+import {create} from 'domain'
 
 describe("Day 08", () => {
-	const treeRowsStrings = [
-		"30373",
-		"25512",
-		"65332",
-		"33549",
-		"35390"
+	const treeRows = [
+		[ 3, 0, 3, 7, 3 ],
+		[ 2, 5, 5, 1, 2 ],
+		[ 6, 5, 3, 3, 2 ],
+		[ 3, 3, 5, 4, 9 ],
+		[ 3, 5, 3, 9, 0 ]
 	];
+
+	describe("createTreeMapFromInputStrings", () => {
+		it("should create a tree map from the puzzle input", () => {
+			const input = [
+				"30373",
+				"25512",
+				"65332",
+				"33549",
+				"35390"
+			];
+
+			const result = createTreeMapFromInputStrings(input);
+
+			expect(result).toEqual([
+				[ 3, 0, 3, 7, 3 ],
+				[ 2, 5, 5, 1, 2 ],
+				[ 6, 5, 3, 3, 2 ],
+				[ 3, 3, 5, 4, 9 ],
+				[ 3, 5, 3, 9, 0 ]
+			]);
+		});
+	});
 
 	describe("areCoordinatesInBounds", () => {
 		it("should identify which coordinate are in or out of bounds", () => {
@@ -287,7 +311,7 @@ describe("Day 08", () => {
 
 	describe("determineVisibilityByRow", () => {
 		it("should mark all trees on the outer ends as visible by default", () => {
-			const result = determineVisibilityByRow(treeRowsStrings, new Set<string>());
+			const result = determineVisibilityByRow(treeRows, new Set<string>());
 
 			expect([ ...result ]).toEqual(expect.arrayContaining([
 				"row0col0",
@@ -304,7 +328,7 @@ describe("Day 08", () => {
 		});
 
 		it("should mark all inner trees which are visible from either side horizontally", () => {
-			const result = determineVisibilityByRow(treeRowsStrings, new Set<string>());
+			const result = determineVisibilityByRow(treeRows, new Set<string>());
 
 			expect([ ...result ]).toEqual(expect.arrayContaining([
 				"row1col1",
@@ -316,7 +340,7 @@ describe("Day 08", () => {
 		});
 
 		it("should not mark any inner trees which are not visible from either side horizontally", () => {
-			const result = determineVisibilityByRow(treeRowsStrings, new Set<string>());
+			const result = determineVisibilityByRow(treeRows, new Set<string>());
 
 			expect([ ...result ]).toEqual(expect.not.arrayContaining([
 				"row1col3",
@@ -329,7 +353,7 @@ describe("Day 08", () => {
 
 	describe("determineVisibilityByColumn", () => {
 		it("should mark all trees on the outer ends as visible by default", () => {
-			const result = determineVisibilityByColumn(treeRowsStrings, new Set<string>());
+			const result = determineVisibilityByColumn(treeRows, new Set<string>());
 
 			expect([ ...result ]).toEqual(expect.arrayContaining([
 				"row0col0",
@@ -346,7 +370,7 @@ describe("Day 08", () => {
 		});
 
 		it("should mark all inner trees which are visible from either side horizontally", () => {
-			const result = determineVisibilityByColumn(treeRowsStrings, new Set<string>());
+			const result = determineVisibilityByColumn(treeRows, new Set<string>());
 
 			expect([ ...result ]).toEqual(expect.arrayContaining([
 				"row1col1",
@@ -356,7 +380,7 @@ describe("Day 08", () => {
 		});
 
 		it("should not mark any inner trees which are not visible from either side horizontally", () => {
-			const result = determineVisibilityByColumn(treeRowsStrings, new Set<string>());
+			const result = determineVisibilityByColumn(treeRows, new Set<string>());
 
 			expect([ ...result ]).toEqual(expect.not.arrayContaining([
 				"row1col3",
@@ -414,14 +438,6 @@ describe("Day 08", () => {
 	});
 
 	describe("determineScenicScores", () => {
-		const treeRows = [
-			[ 3, 0, 3, 7, 3 ],
-			[ 2, 5, 5, 1, 2 ],
-			[ 6, 5, 3, 3, 2 ],
-			[ 3, 3, 5, 4, 9 ],
-			[ 3, 5, 3, 9, 0 ]
-		];
-
 		it("should determine the scenic score for each tree in the map", () => {
 			const result = determineScenicScores(treeRows);
 
