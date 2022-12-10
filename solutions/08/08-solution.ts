@@ -57,22 +57,18 @@ function* getLinearMapTraversalCoordinates<T>(map: Map<T>, direction: MapTravers
 			case "ROW_FORWARD":
 				nextRow = currentRow;
 				nextCol = currentCol + 1;
-
 				break;
 			case "ROW_REVERSE":
 				nextRow = currentRow;
 				nextCol = currentCol - 1;
-
 				break;
 			case "COL_FORWARD":
 				nextRow = currentRow + 1;
 				nextCol = currentCol;
-
 				break;
 			case "COL_REVERSE":
 				nextRow = currentRow - 1;
 				nextCol = currentCol;
-
 				break;
 		}
 
@@ -84,77 +80,28 @@ function addKnownVisibleTree(knownVisibleTrees: KnownVisibleTrees, rowIndex: num
 	knownVisibleTrees.add(`row${rowIndex}col${columnIndex}`);
 }
 
-function determineVisibilityByRow(treeMap: TreeMap, knownVisibleTrees: KnownVisibleTrees): KnownVisibleTrees {
+function determineVisibility(treeMap: TreeMap, knownVisibleTrees: KnownVisibleTrees): KnownVisibleTrees {
+	const traversalStepsPerRowAndDirection: Generator<MapCoordinates>[] = [];
+
 	for (let rowIndex = 0; rowIndex < treeMap.length; rowIndex++) {
-		const leftToRightSteps = getLinearMapTraversalCoordinates(treeMap, "ROW_FORWARD", rowIndex);
-		const rightToLeftSteps = getLinearMapTraversalCoordinates(treeMap, "ROW_REVERSE", rowIndex);
-
-		let highestTreeFromLeft = -1;
-		let highestTreeFromRight = -1;
-
-		for (let stepCoordinates of leftToRightSteps) {
-			const [ currentRowIndex, currentColIndex ] = stepCoordinates;
-			const treeHeight = Number(treeMap[currentRowIndex][currentColIndex]);
-
-			if (treeHeight > highestTreeFromLeft) {
-				highestTreeFromLeft = treeHeight;
-				addKnownVisibleTree(knownVisibleTrees, currentRowIndex, currentColIndex);
-			}
-		}
-
-		const highestOverallTreeInRow = highestTreeFromLeft;
-
-		for (let stepCoordinates of rightToLeftSteps) {
-			const [ currentRowIndex, currentColIndex ] = stepCoordinates;
-			const treeHeight = Number(treeMap[currentRowIndex][currentColIndex]);
-
-			if (treeHeight > highestTreeFromRight) {
-				highestTreeFromRight = treeHeight;
-				addKnownVisibleTree(knownVisibleTrees, currentRowIndex, currentColIndex);
-			}
-
-			if (highestTreeFromRight === highestOverallTreeInRow) {
-				// can no longer encounter any higher tree
-				break;
-			}
-		}
+		traversalStepsPerRowAndDirection.push(getLinearMapTraversalCoordinates(treeMap, "ROW_FORWARD", rowIndex, undefined));
+		traversalStepsPerRowAndDirection.push(getLinearMapTraversalCoordinates(treeMap, "ROW_REVERSE", rowIndex, undefined));
+	}
+	for (let columnIndex = 0; columnIndex < treeMap[0].length; columnIndex++) {
+		traversalStepsPerRowAndDirection.push(getLinearMapTraversalCoordinates(treeMap, "COL_FORWARD", undefined, columnIndex));
+		traversalStepsPerRowAndDirection.push(getLinearMapTraversalCoordinates(treeMap, "COL_REVERSE", undefined, columnIndex));
 	}
 
-	return knownVisibleTrees;
-}
+	for (let stepsCoordinateGenerator of traversalStepsPerRowAndDirection) {
+		let highestTreeEncountered = -1;
 
-function determineVisibilityByColumn(treeMap: TreeMap, knownVisibleTrees: KnownVisibleTrees): KnownVisibleTrees {
-	for (let columnIndex = 0; columnIndex < treeMap[0].length; columnIndex++) {
-		const topToBottomSteps = getLinearMapTraversalCoordinates(treeMap, "COL_FORWARD", undefined, columnIndex);
-		const bottomToTopSteps = getLinearMapTraversalCoordinates(treeMap, "COL_REVERSE", undefined, columnIndex);
-
-		let highestTreeFromTop = -1;
-		let highestTreeFromBottom = -1;
-
-		for (let stepCoordinates of topToBottomSteps) {
+		for (let stepCoordinates of stepsCoordinateGenerator) {
 			const [ currentRowIndex, currentColIndex ] = stepCoordinates;
 			const treeHeight = Number(treeMap[currentRowIndex][currentColIndex]);
 
-			if (treeHeight > highestTreeFromTop) {
-				highestTreeFromTop = treeHeight;
+			if (treeHeight > highestTreeEncountered) {
+				highestTreeEncountered = treeHeight;
 				addKnownVisibleTree(knownVisibleTrees, currentRowIndex, currentColIndex);
-			}
-		}
-
-		const highestOverallTree = highestTreeFromTop;
-
-		for (let stepCoordinates of bottomToTopSteps) {
-			const [ currentRowIndex, currentColIndex ] = stepCoordinates;
-			const treeHeight = Number(treeMap[currentRowIndex][currentColIndex]);
-
-			if (treeHeight > highestTreeFromBottom) {
-				highestTreeFromBottom = treeHeight;
-				addKnownVisibleTree(knownVisibleTrees, currentRowIndex, currentColIndex);
-			}
-
-			if (highestTreeFromBottom === highestOverallTree) {
-				// can no longer encounter any higher tree
-				break;
 			}
 		}
 	}
@@ -217,8 +164,7 @@ async function solve(): Promise<string[]> {
 	const treeMap = createTreeMapFromInputStrings(puzzleInput);
 	let knownVisibleTrees = new Set<string>() as KnownVisibleTrees;
 
-	knownVisibleTrees = determineVisibilityByRow(treeMap, knownVisibleTrees);
-	knownVisibleTrees = determineVisibilityByColumn(treeMap, knownVisibleTrees);
+	knownVisibleTrees = determineVisibility(treeMap, knownVisibleTrees);
 
 	const numberOfVisibleTrees = knownVisibleTrees.size;
 
@@ -236,8 +182,7 @@ export {
 	createTreeMapFromInputStrings,
 	areCoordinatesInBounds,
 	getLinearMapTraversalCoordinates,
-	determineVisibilityByRow,
-	determineVisibilityByColumn,
+	determineVisibility,
 	determineViewDistance,
 	determineScenicScores,
 	searchForHighestScenicScore,
